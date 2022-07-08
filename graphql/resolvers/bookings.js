@@ -3,8 +3,11 @@ const Booking = require('../../models/booking');
 const { transormBookings, transormEvent } = require('./merged');
 
 module.exports = {
-  bookings: async () => {
+  bookings: async (args, req) => {
     try {
+      if (!req.isAuth) {
+        throw new Error('Unauthorize!!');
+      }
       const bookings = await Booking.find();
       return bookings.map((booking) => {
         return transormBookings(booking);
@@ -13,12 +16,16 @@ module.exports = {
       throw err;
     }
   },
-  bookEvent: async (args) => {
+  bookEvent: async (args, req) => {
     try {
+      if (!req.isAuth) {
+        throw new Error('Unauthorize!!');
+      }
       const eventId = args.eventId;
+      const { userId } = req;
       const fetchEvent = await Event.findOne({ _id: eventId });
       const booking = new Booking({
-        user: '62c6c633d849c5c628fcede7',
+        user: userId,
         event: fetchEvent
       });
 
@@ -28,8 +35,11 @@ module.exports = {
       throw err;
     }
   },
-  cancleBooking: async (args) => {
+  cancleBooking: async (args, req) => {
     try {
+      if (!req.isAuth) {
+        throw new Error('Unauthorize!!');
+      }
       const bookingId = args.bookingId;
       const booking = await Booking.findById(bookingId).populate('event');
       const event = transormEvent(booking.event);
